@@ -1,0 +1,38 @@
+name: Deploy to AWS ECR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '10.x' # Ensure compatibility with Angular 6.0
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build the application
+      run: npm run build --prod
+
+    - name: Log in to Amazon ECR
+      uses: aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 767397865179.dkr.ecr.ap-south-1.amazonaws.com
+
+    - name: Build Docker image
+      run: |
+        docker build -t angular-repo .
+        docker tag angular-repo:latest 767397865179.dkr.ecr.ap-south-1.amazonaws.com/angular-repo:latest
+
+    - name: Push Docker image to ECR
+      run: |
+        docker push 767397865179.dkr.ecr.ap-south-1.amazonaws.com/angular-repo:latest
